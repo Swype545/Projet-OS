@@ -1,6 +1,7 @@
 //ERREURS:
 //index = 1 dans les boucles à la fin pausent un problème
 //qsort pose un problème
+//Liste les fichiers, triés par dossiers, séparé par une ligne vide.
 
 //----------------------------------------------------------
 //INCLUDES
