@@ -98,6 +98,7 @@ int main(int argc, char * const argv[], const char *optstring){
 	
 	//Structure pour les statistiques
 	struct stat filestat;
+	struct stat modestat;
 	
 	//getOpt
 	extern char *optarg;
@@ -155,10 +156,10 @@ int main(int argc, char * const argv[], const char *optstring){
 		
 	//Boucle principale (Récupère le nom des fichiers, les stock dans "array")
 	//On fait ceci pour chaque element dans "recArray" pour gerer l'option "recursive -r"
-	/*for(i=1; i<=recArpos; i++)
-	{*/
+	for(i=1; i<=recArpos; i++)
+	{
 		//le filedescriptor depend du dossier qu'on traite
-		fdwhile = open(recArray[0], O_RDONLY | O_DIRECTORY);
+		fdwhile = open(recArray[i-1], O_RDONLY | O_DIRECTORY);
 		while(1){
 			//Syscall getdents
 			nread = syscall(SYS_getdents, fdwhile, buf, BUF_SIZE);
@@ -170,6 +171,7 @@ int main(int argc, char * const argv[], const char *optstring){
 			//On boucle pour récupérer tout les fichiers du répertoire actuellement utilisé
 			while (bpos<nread){
 				d = (struct linux_dirent *) (buf+bpos);
+				d_type =  *(buf + bpos +d->d_reclen -1);
 				
 				//On verifie qu'on a assez de memoire allouée pour "array"
 				if (arpos == arlen) {
@@ -182,28 +184,37 @@ int main(int argc, char * const argv[], const char *optstring){
 				arpos++;
 				
 				//Si la ligne actuellement traitée est un dossier, on l'ajoute à recArray
-				/*if(d->d_type = DT_DIR){
+				//On le liste pas les "." et ".."
+				if (d_type == DT_DIR & *d->d_name != '.') {
 					//On verifie qu'on a assez de memoire allouée pour "recArray"
 					if (recArpos == recArlen) {
 						recArlen *= 2;
-						recArray == realloc(recArray, recArlen * sizeof(char*));
-							//ERREUR traitée
+						recArray = realloc(recArray, recArlen * sizeof(char*));
+						//ERREUR traitée
 					}
+					
 					//On ajoute le path à recArray
-					recArray[recArpos++] = calloc(strlen(path)+strlen(d->d_name)+2, sizeof(char*));
-					sprintf(recArray[recArpos++], "%s/%s", path, d->d_name);
-				}*/
-				
+					recArray[recArpos] = calloc(strlen(path)+strlen(d->d_name)+2, sizeof(char*));
+					sprintf(recArray[recArpos], "%s/%s", path, d->d_name);	
+					recArpos++;
+				}
 				//Incremente bpos 
 				bpos += d->d_reclen;
 			}
 		}	
 		
 		arlen = arpos;
-		/*array = realloc(array, arlen * sizeof(char*));*/
+		if((array = realloc(array, arlen * sizeof(char*))) == NULL){
+			printf("error");
+			exit(EXIT_FAILURE);
+		}
+		
 		
 		//On trie la liste récupérée
 		//qsort(array, sizeof(char*), arlen, cmpstringp);
+		
+		//On affiche le nom du sous-dossier
+		printf("\n %s \n", recArray[i-1]);
 		
 		//On affiche les informations
 		if(lflag == 1)
@@ -249,11 +260,13 @@ int main(int argc, char * const argv[], const char *optstring){
 		if(rflag == 1){
 			//Si le rflag est à 1, on clean l'ensemble des éléments dans array
 			//Et on laisse reboucler sur les autres dossiers de "recArray"
+			arpos = 0;
 		}else{
 			//Si on accepte pas la récursivité, on break la boucle
-			//break;
+			printf("BREAK");
+			break;
 		}
-	/*}*/
+	}
 	
 	
 	exit(EXIT_SUCCESS);
