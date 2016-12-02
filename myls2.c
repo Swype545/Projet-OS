@@ -158,7 +158,7 @@ int main(int argc, char * const argv[], const char *optstring){
 	/*for(i=1; i<=recArpos; i++)
 	{*/
 		//le filedescriptor depend du dossier qu'on traite
-		fdwhile = open(recArray[i], O_RDONLY | O_DIRECTORY);
+		fdwhile = open(recArray[0], O_RDONLY | O_DIRECTORY);
 		while(1){
 			//Syscall getdents
 			nread = syscall(SYS_getdents, fdwhile, buf, BUF_SIZE);
@@ -174,7 +174,7 @@ int main(int argc, char * const argv[], const char *optstring){
 				//On verifie qu'on a assez de memoire allouée pour "array"
 				if (arpos == arlen) {
 					arlen *= 2;
-					array == realloc(array, arlen * sizeof(char*));
+					array = realloc(array, arlen * sizeof(char*));
 						//ERREUR traitée
 				}
 				//On ajoute le nom du fichier/dossier dans l'array
@@ -211,14 +211,14 @@ int main(int argc, char * const argv[], const char *optstring){
 			if(aflag == 1)
 			{
 				//On affiche les fichiers cachés, avec des informations complémentaires
-				for(index = 1; index < arlen; index++)
+				for(index = 0; index < arlen; index++)
 				{
 					stat(array[index], &filestat);
 					printf("size: %ld last:%s %s \n", filestat.st_size, ctime(&filestat.st_atime), array[index]);
 				}
 			}else{
 				//On masque les fichiers cachés, avec des infomations complémentaires
-				for(index = 1; index < arlen; index++)
+				for(index = 0; index < arlen; index++)
 				{
 					if(array[index][0] != '.'){
 						stat(array[index], &filestat);
@@ -230,14 +230,14 @@ int main(int argc, char * const argv[], const char *optstring){
 			if(aflag == 1)
 			{
 				//On affiche les fichiers cachés
-				for(index = 1; index < arlen; index++)
+				for(index = 0; index < arlen; index++)
 				{
 					printf("%s\n", array[index]);
 				}
 			}else{
 				
 				//On masque les fichiers cachés
-				for(index = 1; index < arlen; index++)
+				for(index = 0; index < arlen; index++)
 				{
 					if(array[index][0] != '.'){
 						printf("%s\n", array[index]);
