@@ -212,10 +212,10 @@ int main(int argc, char * const argv[], const char *optstring){
 		
 		
 		//On trie la liste récupérée
-		//qsort(array, sizeof(char*), arlen, cmpstringp);
+		qsort(array, arlen, sizeof(char*), cmpstringp);
 		
 		//On affiche le nom du sous-dossier
-		printf("\n %s \n", recArray[i-1]);
+		printf("\n %s: \n", recArray[i-1]);
 		
 		//On affiche les informations
 		if(lflag == 1)
