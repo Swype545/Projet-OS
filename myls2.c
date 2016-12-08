@@ -45,16 +45,6 @@ struct linux_dirent {
 	char d_name[];
 };
 
-/*Autre structure possible?
-struct linux_dirent64 {
-   ino64_t        d_ino;    /* 64-bit inode number */
-   /*off64_t        d_off;    /* 64-bit offset to next structure */
-   /*unsigned short d_reclen; /* Size of this dirent */
-   /*unsigned char  d_type;   /* File type */
-   /*char           d_name[]; /* Filename (null-terminated) */
-/*};*/
-
-
 //----------------------------------------------------------
 //MAIN
 //----------------------------------------------------------
@@ -140,16 +130,30 @@ int main(int argc, char * const argv[], const char *optstring){
 	//CODE
 	//---------------------
 	//Definition du filedescriptor (fd) en fonction de la présence ou non de paramètre
+	
 	if(argc > optind)
 	{
 		//On définit le path actuel
 		path = strdup(argv[optind]);
-		fd= open(argv[optind], O_RDONLY | O_DIRECTORY);
+		if(fd= open(argv[optind], O_RDONLY | O_DIRECTORY) == -1){
+			if (errno == ENOTDIR)
+			{
+				printf("%s\n", argv[optind]);
+			}else{
+				printf("error OPEN\n");
+			}
+			return EXIT_FAILURE;
+		};
 	}else{
 		path = strdup(".");
-		fd = open(".", O_RDONLY | O_DIRECTORY);
+		if(fd = open(".", O_RDONLY | O_DIRECTORY) == -1){
+			printf("error OPEN\n");
+			return EXIT_FAILURE;
+		};
 	}
 
+	
+	
 	//On ajoute le path actuel au recArray
 	recArray[recArpos++] = path;
 	if (array == NULL)
@@ -160,15 +164,31 @@ int main(int argc, char * const argv[], const char *optstring){
 	for(i=1; i<=recArpos; i++)
 	{
 		//le filedescriptor depend du dossier qu'on traite
-		fdwhile = open(recArray[i-1], O_RDONLY | O_DIRECTORY);
+		if((fdwhile = open(recArray[i-1], O_RDONLY | O_DIRECTORY)) == -1){
+			if (errno == ENOTDIR)
+			{
+				printf("%s\n", recArray[i-1]);
+			}else{
+				printf("error OPEN in\n");
+			}
+		}
 		while(1){
 			//Syscall getdents
-			nread = syscall(SYS_getdents, fdwhile, buf, BUF_SIZE);
+			if((nread = syscall(SYS_getdents, fdwhile, buf, BUF_SIZE)) == -1)
+			{
+				//printf("recarray[i-1]: %s\n",recArray[i-1]);
+				if(errno == EBADF)
+				{
+					//printf("EBADF");
+				}
+
+			}
 			//S'il n'y a plus rien, on fini la boucle
 			if (nread ==0)
 				break;
 			
 			bpos = 0;
+			
 			//On boucle pour récupérer tout les fichiers du répertoire actuellement utilisé
 			while (bpos<nread){
 				d = (struct linux_dirent *) (buf+bpos);
@@ -186,7 +206,7 @@ int main(int argc, char * const argv[], const char *optstring){
 				
 				//Si la ligne actuellement traitée est un dossier, on l'ajoute à recArray
 				//On le liste pas les "." et ".."
-				if (d_type == DT_DIR & *d->d_name != '.') {
+				if (d_type == DT_DIR && (strcmp(d->d_name, ".") != 0) && (strcmp(d->d_name, "..") != 0)) {
 					//On verifie qu'on a assez de memoire allouée pour "recArray"
 					if (recArpos == recArlen) {
 						recArlen *= 2;
@@ -195,8 +215,8 @@ int main(int argc, char * const argv[], const char *optstring){
 					}
 					
 					//On ajoute le path à recArray
-					recArray[recArpos] = calloc(strlen(path)+strlen(d->d_name)+2, sizeof(char*));
-					sprintf(recArray[recArpos], "%s/%s", path, d->d_name);	
+					recArray[recArpos] = calloc(strlen(recArray[i-1])+strlen(d->d_name)+2, sizeof(char*));
+					sprintf(recArray[recArpos], "%s/%s", recArray[i-1], d->d_name);	
 					recArpos++;
 				}
 				//Incremente bpos 
@@ -212,10 +232,11 @@ int main(int argc, char * const argv[], const char *optstring){
 		
 		
 		//On trie la liste récupérée
-		//qsort(array, sizeof(char*), arlen, cmpstringp);
+		qsort(array, arlen, sizeof(char*), cmpstringp);
+		//qsort(recArray, recArlen, sizeof(char*), cmpstringp);
 		
 		//On affiche le nom du sous-dossier
-		printf("\n %s \n", recArray[i-1]);
+		printf("\n %s: \n", recArray[i-1]);
 		
 		//On affiche les informations
 		if(lflag == 1)
@@ -257,14 +278,18 @@ int main(int argc, char * const argv[], const char *optstring){
 				}
 			}
 		}
-		
 		if(rflag == 1){
 			//Si le rflag est à 1, on clean l'ensemble des éléments dans array
 			//Et on laisse reboucler sur les autres dossiers de "recArray"
+			//free(array);
+			//printf("path: %s\n", recArray[i-1]);
+	
 			arpos = 0;
+			//arlen = 10;
+			//array = realloc(array, arlen * sizeof(char*));
+			
 		}else{
 			//Si on accepte pas la récursivité, on break la boucle
-			printf("BREAK");
 			break;
 		}
 	}
