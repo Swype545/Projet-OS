@@ -56,6 +56,7 @@ int main(int argc, char * const argv[], const char *optstring){
 	//Paramètres nécessaire pour le getdents 
 	int fd, openpid, openpidcomm, nread;
 	char buf[BUF_SIZE];
+	char buf_print[BUF_SIZE];
 	struct linux_dirent *d;
 	int bpos;
 	char d_type, dname;
@@ -132,15 +133,19 @@ int main(int argc, char * const argv[], const char *optstring){
 				//On ouvre le fichier "comm" qui contient le nom du processus
 				openpidcomm = openat(openpid, "comm", O_RDONLY); 
 			
-				while((read(openpidcomm, buf, BUF_SIZE)) > 0){
-					printf("%s -- %s\n",d->d_name,buf);
+                int n;
+				while((n = read(openpidcomm, buf_print, BUF_SIZE-1)) > 0){
+                    buf_print[n] = '\0';
+					printf("%4s -- %s", d->d_name, buf_print);
 				}
+                close(openpidcomm);
+                close(openpid);
 			}
 			//Incremente bpos 
 			bpos += d->d_reclen;
 		}
 	}
-
+    close(fd);
 	
 	
 	exit(EXIT_SUCCESS);
