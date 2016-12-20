@@ -2,12 +2,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 #include <ctype.h>
 #include <string.h>
-#include <errno.h>
 
+
+
+#define BUF_SIZE 2048
 char input[1024];
+
+
 
 void commandline(){
 	printf("> ");
@@ -77,13 +83,45 @@ void execcmd(){
 	}
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-	//Bpucle principale, attente d'input
-	while(1){
-		commandline();
-		waitinput();
-		execcmd();
+	char buf[BUF_SIZE];
+	
+	//Mode BASH
+	//Si on donne des paramètres en appellant le shell...
+	if (argc != 1){
+		int fd = open(argv[optind], O_RDONLY);
+		
+		//On met les caractères dans un buffer
+		while((read(fd, buf, BUF_SIZE)) >0);
+			
+		//A chaque \n qu'on trouve, on coupe (détermination des différentes commandes dans le fichier)
+		char *save, *token;
+		
+		token = strtok_r(buf, "\n", &save);
+		
+		//On execute chaque ligne
+		while (token != NULL){
+			printf("\n Execution: %s \n", token);
+			
+			//On met la commande dans input
+			strcpy(input,token);
+			
+			execcmd();
+			
+			//On prend la ligne suivante dans le fichier
+			token = strtok_r(NULL, "\n", &save);
+		}
 	}
-	return 0;
+	else{
+		//Mode interactif: shell
+		while(1){
+			commandline();
+			waitinput();
+			execcmd();
+		}
+		return 0;
+	}
+	
+	
 }
