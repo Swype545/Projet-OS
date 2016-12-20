@@ -15,5 +15,5 @@ def build(bld):
     print(sources)
     for f in sources:
         bld.program(source="cmd/"+f,
-                    target="../"+splitext(f)[0],
+                    target=splitext(f)[0],
                     cflags=flags)
