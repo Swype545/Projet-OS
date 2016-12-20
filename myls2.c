@@ -292,8 +292,23 @@ int main(int argc, char * const argv[], const char *optstring){
 			//Si on accepte pas la récursivité, on break la boucle
 			break;
 		}
+		
+		//On free les callocs
+		for(index = 0; index < arlen; index++)
+		{
+			free(array[index]);
+		}
+		
+	}
+	
+	//On free les callocs
+	for(index = 0; index < recArlen; index++)
+	{
+		free(recArray[index]);
 	}
 	
 	
+	free(array);
+	free(recArray);
 	exit(EXIT_SUCCESS);
 };
