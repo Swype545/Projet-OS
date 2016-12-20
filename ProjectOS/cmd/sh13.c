@@ -112,6 +112,7 @@ int main(int argc, char *argv[])
 			//On prend la ligne suivante dans le fichier
 			token = strtok_r(NULL, "\n", &save);
 		}
+		close(fd);
 	}
 	else{
 		//Mode interactif: shell
