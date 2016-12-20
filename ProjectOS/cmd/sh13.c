@@ -56,7 +56,7 @@ void execcmd(){
 	}
 	else if(pid == 0) //Dans le fils
 	{
-		//On récupère les 4 paramètres
+		//On récupère les 4 paramètres de "input"
 		char *cmd = strtok(input," ");
 		char *p1 = strtok(NULL," ");
 		char *p2 = strtok(NULL," ");

@@ -247,15 +247,26 @@ int main(int argc, char * const argv[], const char *optstring){
 				for(index = 0; index < arlen; index++)
 				{
 					stat(array[index], &filestat);
-					printf("size: %ld last:%s %s \n", filestat.st_size, ctime(&filestat.st_atime), array[index]);
+					//On supprime le \n de fin du filestat
+					char *ttime = ctime(&filestat.st_atime);
+					if(ttime, '\n')
+						*strchr(ttime, '\n') = 0;
+					printf("size: %ld last:%s %s \n", filestat.st_size, ttime, array[index]);
 				}
 			}else{
 				//On masque les fichiers cachés, avec des infomations complémentaires
 				for(index = 0; index < arlen; index++)
 				{
+					stat(array[index], &filestat);
+					//On supprime le \n de fin du filestat
+					char *ttime = ctime(&filestat.st_atime);
+					if(ttime, '\n')
+						*strchr(ttime, '\n') = 0;
+					
+					
 					if(array[index][0] != '.'){
 						stat(array[index], &filestat);
-						printf("size: %ld last:%s %s\n", filestat.st_size, ctime(&filestat.st_atime), array[index]);
+						printf("size: %ld last:%s %s\n", filestat.st_size, ttime, array[index]);
 					}
 				}
 			}
