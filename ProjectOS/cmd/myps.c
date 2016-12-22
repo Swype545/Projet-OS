@@ -106,9 +106,9 @@ int main(int argc, char * const argv[], const char *optstring){
 	//Definition du filedescriptor (fd) en fonction de la présence ou non de paramètre
 	
 	if(hflag == 1){
-		printf("\n Cette fonction liste l'ensemble des processus en cours\n");
-		printf("-h ou --help affiche l'aide\n");
-		printf("-p ou --pid affiche les informations relative au pid mis en option\n");
+		printf("\n Cette fonction liste l'ensemble des processus en cours.\n");
+		printf("-h ou --help affiche l'aide.\n");
+		printf("-p ou --pid affiche les informations relative au pid mis en paramètre.\n");
 	}else{
 		
 		if((fd = open("/proc",O_RDONLY|O_DIRECTORY)) == -1){
@@ -128,7 +128,8 @@ int main(int argc, char * const argv[], const char *optstring){
 				break;
 			
 			bpos = 0;
-			
+			printf("PID -- Command\n");
+			printf("--------------\n");
 			while(bpos < nread){
 				
 				d = (struct linux_dirent *) (buf+bpos);
